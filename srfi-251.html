@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SRFI ###: Mixing groups of definitions with expressions within bodies</title>
+    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link rel="stylesheet" href="https://srfi.schemers.org/srfi.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+     small { font-size: 14px; vertical-align: 2px; }
+     body  { line-height: 24px; }
+     pre  { line-height: 20px; }
+    </style>
+  </head>
+  <body>
+    <h1><a href="https://srfi.schemers.org/"><img class="srfi-logo" src="https://srfi.schemers.org/srfi-logo.svg" 
+    alt="SRFI surfboard logo" /></a>###: Mixing groups of definitions with expressions within bodies</h1>
+
+<p>by Sergei Egorov</p>
+
+<h2 id="status">Status</h2>
+
+<p style="color: red;">For editor's use only.  Please do not edit this section.</p>
+
+<p>??? the draft/final/withdrawn status of the SRFI, information on how
+to subscribe to its mailing list, and important dates in its history.
+The editor will add this section.</p>
+
+<h2 id="abstract">Abstract</h2>
+
+<p>
+Scheme has traditionally required procedure bodies and the bodies of derived constructs 
+such as <tt>let</tt> to contain definitions followed by commands/expressions. 
+This SRFI proposes to allow mixing commands and groups of definitions in such bodies, so that each
+command/expression is in the scope of all local definitions preceding it, but not in scope of 
+the local definitions following it. This approach is backwards compatible with R7RS and 
+upholds the intuitive rule that to find the definition of a lexical variable, one has 
+to look <em>up</em> the source code tree.
+</p>
+
+<h2 id="issues">Issues</h2>
+
+<p>None known at present.</p>
+
+<h2 id="rationale">Rationale</h2>
+
+<p>
+This SRFI competes with Daphne Preston-Kendal's <a href="https://srfi.schemers.org/srfi-245/">SRFI-245</a>,
+which also allows arbitrary mixing of expressions/commands with definitions within single &langle;body&rangle;.
+The difference is in the <em>scope</em> of the internal definitions &mdash; while SRFI-245 proposes single recursive
+scope for all definitions, this SRFI limits the scope of each group of immediately adjacent definitions to the 
+corresponding initializers and the subsequent body forms; the preceding body forms are not included. This 
+scope rule is in line with common expectations on identifier visibility: to find a definition of an identifier,
+one has to go <em>up</em> the source tree, looking at groups of adjacent definitions, bindings, or formals; the
+first definition found (or top-level one if none is found) is the definition for the identifier in question.
+SRFI-245's rule of looking not only <em>up</em> the tree, but also <em>down</em>, stepping over the commands
+until the whole body is inspected, goes against the usual expectations. The proposed approach to scopes within
+body-like constructs with mixed expressions and definitions is in line with decisions made by designers of
+modern functional languages such as ReasonML, Elixir, and others. 
+</p>
+
+<p>
+Note that differences in scope behavior of the proposed body-level definitions and top-level definitions
+are made necessary by the fact that potentially there is a lot of lexically-scoped identifiers to refer
+to from bodies, while top level has just one scope, the program/library global scope. The “look up the tree” 
+rule for searching for variable definitions is not applicable on the top level, because there is no “up”;
+replicating this functionality on a local level may lead to hard-to-follow code, with “up” and “down”
+variable definition scans competing for programmer's attention (this is why bindings-first <code>let</code>-style
+forms are usually preferred to bindings-at-end <code>where</code>-style forms).
+</p>
+  
+<p>
+The rationale for allowing commands before and between the definitions within a single &langle;body&rangle;
+is the same as in SRFI-245, so it is copied verbatim below (except for the last paragraph). Also, since this 
+proposal requires body-level <code>begin</code> forms to be treated as purely splicing constructs, implementation
+of some definition-producing macros such as <code>define-values</code> can become easier because they can 
+expand to a command or a <code>begin</code> form with a mix of commands and definitions so it can be used not 
+only on the top level, but also locally, on a body level. 
+</p>
+
+<p>
+It often makes sense to run type and other basic error checks on input forms before any other code runs 
+(including the right-hand sides of definitions):
+</p>
+<pre><code>(define (double-square x) 
+  (unless (number? x)
+    (error "foo: not a number" x))
+  (define y (square x))
+  (* 2 y))
+</code></pre>
+
+<p>
+It is likewise sometimes useful to insert logging code before the beginning of a procedure before any other code:
+</p>
+
+<pre><code>(define (dangerous-operation x)
+  (log-warn "Beginning dangerous operation on value" x)
+  (define prepared-x (prepare-for-dangerous-operation x))
+  ...)
+</code></pre>
+
+<p>
+  When writing test suites it is often beneficial to build up values to be tested and run the tests on them incrementally:
+</p>
+
+<pre><code>(test-group "basic arithmetic"
+  (define one-plus-one (+ 1 1))
+  (test 2 one-plus-one)
+  (define two-plus-two (+ one-plus-one one-plus-one))
+  (test 4 two-plus-two))</code></pre>
+      
+<h2 id="specification">Specification</h2>
+
+<p>
+Scheme's syntax for &langle;body&rangle; must be changed to
+allow &langle;definition&rangle; at any top-level position but the last.
+The grammar rules are:
+</p>
+<p>
+&nbsp;&nbsp;&langle;body&rangle; &xrarr; &langle;command&rangle; &langle;body&rangle;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&langle;definition&rangle;<small>+</small> &langle;body&rangle;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&langle;expression&rangle;<br>
+</p>
+
+<p>
+Informally, each group of adjacent definitions starts a new mutually recursive scope 
+that incorporates the rest of the body. More formally, we can represent the semantics of
+new &langle;body&rangle; in terms of R7RS &langle;body&rangle; via translation function 
+T[<i>new body</i>] &xrArr; <i>R7RS body</i> : 
+</p>
+
+<p>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;command&rangle; &langle;body&rangle;]
+&nbsp;&nbsp;&xrArr;&nbsp;&nbsp;&langle;command&rangle; T[&langle;body&rangle;]<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;definition&rangle;<small>+</small> &langle;body&rangle;]
+&nbsp;&nbsp;&xrArr;&nbsp;&nbsp;<tt>((lambda</tt> <tt>()</tt> &langle;definition&rangle;<small>+</small> T[&langle;body&rangle;]<tt>))</tt><br/>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;expression&rangle;]
+&nbsp;&nbsp;&xrArr;&nbsp;&nbsp;&langle;expression&rangle;<br/>
+</p>
+
+<p>
+A conforming implementation must allow body-level definitions of the form 
+<tt>(begin</tt> &langle;definition&rangle;<small>+</small><tt>)</tt> to contain
+an arbitrary mix of commands and definitions to be “spliced” into the original body before
+the above translation is (conceptually) performed. In effect, this extends the syntax
+of body-level <code>begin</code> definitions to that of top/program/library-level <code>begin</code>, 
+i.e. <tt>(begin</tt> &langle;command or definition&rangle;<small>+</small><tt>)</tt>
+</p>
+
+<p>
+The actual transformation, ran as a part of the macro expansion process, must ensure that
+macro uses expanding into definitions are processed in the same way as forms they expand to.
+In order to support this SRFI, the “definition discovery” process, normally limited to initial 
+body forms, should be repeated after each non-definition form, producing a new nested recursive 
+scope for each group of adjacent definitions. Body-level <code>begin</code> forms, possibly
+resulting from macro expansion in scopes established as macro processing steps through the body 
+forms, are “spliced in” as soon as they are discovered, by prepending the contained forms to the
+list of forms yet to be processed.
+</body>
+</p>
+
+<p>
+Examples:  
+</p>
+
+<pre><code>(let ()
+  expr_1
+  (define var_1 (x))
+  expr_2
+  expr_3
+  (define-syntax mac_1 (syntax-rules () ((_) (y))))
+  (define var_2 (z))
+  expr_4
+  expr_5)
+</code></pre>
+<p>can be rewritten as (R7RS):</p>	
+<pre><code>(let ()
+  expr_1
+  (let ()
+    (define var_1 (x))
+    expr_2
+    expr_3
+    (let ()
+      (define-syntax mac_1 (syntax-rules () ((_) (y))))
+      (define var_2 (z))
+      expr_4
+      expr_5)))
+</code></pre>
+<p>Mix of definitions and syntax definitions:</p>
+<pre><code>(let ((x 0) (l '())) 
+  (set! x 1) 
+  (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
+  (define (pushv v) (set! l (cons v l)))
+  (define-syntax pushx (syntax-rules () ((_) (pushv x))))
+  (pushx)
+  (define-syntax x (syntax-rules () ((_) 42)))
+  (pushx)
+  (incx 14)
+  (pushx)
+  (pushv (x))
+  l)
+&xrArr;  
+(42 15 1 1)
+</code></pre>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>
+Sample implementation is based on Alan Petrofsky's EIOD (“Eval In One Define”) v1.17.
+Support for this proposal is implemented as a 5-line patch to the original code.
+</p>
+
+<a href="eiod+mde.scm">Source for the sample implementation.</a>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+
+<p>Daphne Preston-Kendal's <a href="https://srfi.schemers.org/srfi-245/">SRFI-245</a> served as an inspiration for this proposal.</p>
+
+<h2 id="copyright">Copyright</h2>
+<p>&copy; 202? Sergei Egorov</p>
+
+<p>
+  Permission is hereby granted, free of charge, to any person
+  obtaining a copy of this software and associated documentation files
+  (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge,
+  publish, distribute, sublicense, and/or sell copies of the Software,
+  and to permit persons to whom the Software is furnished to do so,
+  subject to the following conditions:</p>
+
+<p>
+  The above copyright notice and this permission notice (including the
+  next paragraph) shall be included in all copies or substantial
+  portions of the Software.</p>
+<p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+  BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+  ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.</p>
+
+  <hr>
+  <address>Editor: <a href="mailto:srfi-editors+at+srfi+dot+schemers+dot+org">Arthur A. Gleckler</a></address></body></html>
