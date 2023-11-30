@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>Mixing groups of definitions with expressions within bodies</title>
+      <link href="/admin.css" rel="stylesheet">
+      <link href="/list.css" rel="stylesheet">
+      <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <script type="text/x-mathjax-config">MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});</script>
+      <script crossorigin="anonymous" integrity="sha384-Ra6zh6uYMmH5ydwCqqMoykyf1T/+ZcnOQfFPhDrp2kI4OIxadnhsvvA2vv9A7xYv" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script></head>
+    <body>
+      <h1>SRFI 251: Mixing groups of definitions with expressions within bodies</h1>
+      <p class="authors">by Sergei Egorov</p>
+      <p class="based-on"></p>
+      <p class="status">status: <em>draft</em> (2023-11-30)</p>
+      <p class="keywords">keywords: <a href="https://srfi.schemers.org/?keywords=binding">Binding</a></p><span class="see-also">See also <a href="/srfi-245/">SRFI 245: Mixing definitions and expressions within bodies</a>.</span>
+      <ul class="info">
+        <li><a href="srfi-251.html">The SRFI Document</a></li>
+        <li><a href="https://srfi-email.schemers.org/srfi-251/">Discussion Archive</a></li>
+        <li><a href="https://github.com/scheme-requests-for-implementation/srfi-251">Git repo (on GitHub)</a></li>
+        <li><a href="mailto:srfi-251@srfi.schemers.org">srfi-251@<span class="antispam">nospam</span>srfi.schemers.org (subscribers only)</a></li>
+        <li><span class="firefox-column-workaround">
+            <form method="POST" action="https://www.simplelists.com/subscribe.php">
+              <div class="title">Subscribe to srfi-251 mailing list</div><input name="email" placeholder="email address" tabindex="1" type="email"><input name="name" placeholder="full name" tabindex="2" type="text">
+              <p><input id="sub-digest" name="digest" tabindex="3" type="checkbox" value="digest"><label for="sub-digest">daily digest?</label></p><input class="submit" name="submit" tabindex="4" type="submit" value="Subscribe to srfi-251"><input type="hidden" name="action" value="subscribe"><input type="hidden" name="list" value="srfi-251@srfi.schemers.org"></form></span></li>
+        <li><span class="firefox-column-workaround">
+            <form method="POST" action="https://www.simplelists.com/subscribe.php">
+              <div class="title">Unsubscribe from srfi-251 mailing list</div><input name="email" placeholder="email address" tabindex="5" type="email"><input class="submit" name="submit" tabindex="6" type="submit" value="Unsubscribe from srfi-251"><input type="hidden" name="action" value="unsubscribe"><input name="list" type="hidden" value="srfi-251@srfi.schemers.org"></form></span></li></ul>
+      <h2>Abstract</h2><p> Scheme has traditionally required procedure bodies and the bodies of derived constructs such as <code>let</code> to contain definitions followed by commands/expressions. This SRFI proposes to allow mixing commands and groups of definitions in such bodies, so that each command/expression is in the scope of all local definitions preceding it, but not in scope of the local definitions following it. This approach is backwards compatible with R7RS and upholds the intuitive rule that to find the definition of a lexical variable, one has to look <em>up</em> the source code tree. </p></body></html>
