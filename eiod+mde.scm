@@ -13,7 +13,7 @@
 ;;   (define var_3 (z))
 ;;   expr_4
 ;;   expr_5)
-;; ⟹	
+;; ⟹
 ;; (let ()
 ;;   expr_1
 ;;   (let ()
@@ -43,9 +43,9 @@
 ;; Foundation (fsf.org); either version 2, or (at your option) any
 ;; later version.
 
-;; Feel free to ask me for different licensing terms. 
+;; Feel free to ask me for different licensing terms.
 
-;; DISCLAIMER: 
+;; DISCLAIMER:
 
 ;; This is only intended as a demonstration of the minimum
 ;; implementation effort required for an r5rs eval.  It serves as a
@@ -189,9 +189,9 @@
                   (else (let ((ieval (lambda (init) (eval init ienv))))
                           (for-each set-val! (map ienv ids) (map1 ieval inits))
 ;;; +MDE (main change)
-                          (if (null? rest) 
+                          (if (null? rest)
                               (eval first ienv) ;; tail call
-                              (begin 
+                              (begin
                                 (eval first ienv)
                                 (loop ienv '() '() rest))))))))))))
 ;;; -MDE
@@ -240,7 +240,7 @@
                        (collect (car x) #t (collect (cddr x) inc l))
                        (collect (car x) inc (collect (cdr x) inc l))))
                   (else l))))
-    
+
         ;; Returns #f or an alist mapping each pattern var to a part of
         ;; the input.  Ellipsis vars are mapped to lists of parts (or
         ;; lists of lists ...).
@@ -540,7 +540,7 @@
        (if noisy (begin (display "Trying: ") (write exp) (newline)))
        (let* ((result (eval exp env))
               (success (equal? result expected)))
-         (if (not success) 
+         (if (not success)
              (begin (set! fail-count (+ 1 fail-count))
                     (display "Failed: ")
                     (if (not noisy) (write exp))
@@ -582,7 +582,7 @@
      ((let* ((x 1) (x (+ x 1))) x) 2)
      ((let ((call/cc call-with-current-continuation))
         (letrec ((x (call/cc list)) (y (call/cc list)))
-          (if (procedure? x) (x (pair? y))) 
+          (if (procedure? x) (x (pair? y)))
           (if (procedure? y) (y (pair? x)))
           (let ((x (car x)) (y (car y)))
             (and (call/cc x) (call/cc y) (call/cc x)))))
@@ -628,35 +628,35 @@
      ((let-syntax ((m (syntax-rules () ((m x ... y) (y x ...)))))
         (m 1 2 3 -))
       -4)
-     ;;; +MDE specific tests 
-     ((let ((x 0) (l '())) 
-        (set! x 1) 
+     ;;; +MDE specific tests
+     ((let ((x 0) (l '()))
+        (set! x 1)
         (define (incx v) (set! x (+ x v)))
         (define (pushv v) (set! l (cons v l)))
         (define (pushx) (pushv x))
-        (pushx) 
+        (pushx)
         (define x 42)
         (pushx)
         (incx 14)
         (pushx)
         (pushv x)
         l)
-      (42 15 1 1))      
-     ((let ((x 0) (l '())) 
-        (set! x 1) 
+      (42 15 1 1))
+     ((let ((x 0) (l '()))
+        (set! x 1)
         (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
         (define (pushv v) (set! l (cons v l)))
         (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (pushx) 
+        (pushx)
         (define x 42)
         (pushx)
         (incx 14)
         (pushx)
         (pushv x)
         l)
-      (42 15 1 1))      
-     ((let ((x 0) (l '())) 
-        (set! x 1) 
+      (42 15 1 1))
+     ((let ((x 0) (l '()))
+        (set! x 1)
         (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
         (define (pushv v) (set! l (cons v l)))
         (define-syntax pushx (syntax-rules () ((_) (pushv x))))
@@ -667,13 +667,13 @@
         (pushx)
         (pushv (x))
         l)
-      (42 15 1 1))      
-     ((let ((x 0) (l '())) 
-        (set! x 1) 
+      (42 15 1 1))
+     ((let ((x 0) (l '()))
+        (set! x 1)
         (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
         (define (pushv v) (set! l (cons v l)))
         (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (begin ; spliced, so x starts new scope 
+        (begin ; spliced, so x starts new scope
           (pushx)
           (define-syntax x (syntax-rules () ((_) 42)))
           (pushx))
@@ -681,12 +681,12 @@
         (pushx)
         (pushv (x))
         l)
-      (42 15 1 1))      
-     ((let ((x 0) (l '())) 
-        (set! x 1) 
+      (42 15 1 1))
+     ((let ((x 0) (l '()))
+        (set! x 1)
         (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
         (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (begin ; spliced, so pushx above can see pushv below 
+        (begin ; spliced, so pushx above can see pushv below
           (define (pushv v) (set! l (cons v l)))
           (pushx)
           (define-syntax x (syntax-rules () ((_) 42)))
@@ -695,12 +695,12 @@
         (pushx)
         (pushv (x))
         l)
-      (42 15 1 1))      
+      (42 15 1 1))
       ))
       (if noisy (begin (write fail-count) (display " failures.") (newline)))) ;; +MDE
 
 ;; matching close paren for quote-and-evaluate at beginning of file.
-) 
+)
 
 (tests #t) ;; +MDE
 
