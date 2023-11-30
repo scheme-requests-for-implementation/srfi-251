@@ -61,7 +61,7 @@ modern functional languages such as ReasonML, Elixir, and others.
 
 <p>
 Note that differences in scope behavior of the proposed body-level definitions and top-level definitions
-are made necessary by the fact that potentially there is a lot of lexically-scoped identifiers to refer
+are made necessary by the fact that potentially there are a lot of lexically-scoped identifiers to refer
 to from bodies, while top level has just one scope, the program/library global scope. The “look up the tree”
 rule for searching for variable definitions is not applicable on the top level, because there is no “up”;
 replicating this functionality on a local level may lead to hard-to-follow code, with “up” and “down”
@@ -148,7 +148,7 @@ i.e. <code>(begin</code> &langle;command or definition&rangle;<small>+</small><c
 </p>
 
 <p>
-The actual transformation, ran as a part of the macro expansion process, must ensure that
+The actual transformation, run as a part of the macro expansion process, must ensure that
 macro uses expanding into definitions are processed in the same way as forms they expand to.
 In order to support this SRFI, the “definition discovery” process, normally limited to initial
 body forms, should be repeated after each non-definition form, producing a new nested recursive
