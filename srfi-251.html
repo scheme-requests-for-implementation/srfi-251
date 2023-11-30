@@ -30,7 +30,7 @@ The editor will add this section.</p>
 
 <p>
 Scheme has traditionally required procedure bodies and the bodies of derived constructs 
-such as <tt>let</tt> to contain definitions followed by commands/expressions. 
+such as <code>let</code> to contain definitions followed by commands/expressions. 
 This SRFI proposes to allow mixing commands and groups of definitions in such bodies, so that each
 command/expression is in the scope of all local definitions preceding it, but not in scope of 
 the local definitions following it. This approach is backwards compatible with R7RS and 
@@ -133,18 +133,18 @@ T[<i>new body</i>] &xrArr; <i>R7RS body</i> :
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;command&rangle; &langle;body&rangle;]
 &nbsp;&nbsp;&xrArr;&nbsp;&nbsp;&langle;command&rangle; T[&langle;body&rangle;]<br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;definition&rangle;<small>+</small> &langle;body&rangle;]
-&nbsp;&nbsp;&xrArr;&nbsp;&nbsp;<tt>((lambda</tt> <tt>()</tt> &langle;definition&rangle;<small>+</small> T[&langle;body&rangle;]<tt>))</tt><br/>
+&nbsp;&nbsp;&xrArr;&nbsp;&nbsp;<code>((lambda</code> <code>()</code> &langle;definition&rangle;<small>+</small> T[&langle;body&rangle;]<code>))</code><br/>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T[&langle;expression&rangle;]
 &nbsp;&nbsp;&xrArr;&nbsp;&nbsp;&langle;expression&rangle;<br/>
 </p>
 
 <p>
 A conforming implementation must allow body-level definitions of the form 
-<tt>(begin</tt> &langle;definition&rangle;<small>+</small><tt>)</tt> to contain
+<code>(begin</code> &langle;definition&rangle;<small>+</small><code>)</code> to contain
 an arbitrary mix of commands and definitions to be “spliced” into the original body before
 the above translation is (conceptually) performed. In effect, this extends the syntax
 of body-level <code>begin</code> definitions to that of top/program/library-level <code>begin</code>, 
-i.e. <tt>(begin</tt> &langle;command or definition&rangle;<small>+</small><tt>)</tt>
+i.e. <code>(begin</code> &langle;command or definition&rangle;<small>+</small><code>)</code>
 </p>
 
 <p>
