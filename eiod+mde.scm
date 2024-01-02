@@ -1,31 +1,5 @@
-;; Mixing definitions and expressions within bodies (alternatrive to SRFI-245)
-
-;; Implements the folowing semantics (definition groups may mix regular and syntax
-;; definitions):
-;;
-;; (let ()
-;;   expr_1
-;;   (define var_1 (x))
-;;   (define-syntax syn_1 (syntax-rules () ((_ y) y)))
-;;   expr_2
-;;   expr_3
-;;   (define var_2 (y))
-;;   (define var_3 (z))
-;;   expr_4
-;;   expr_5)
-;; ⟹
-;; (let ()
-;;   expr_1
-;;   (let ()
-;;     (define var_1 (x))
-;;     (define-syntax syn_1 (syntax-rules () ((_ y) y)))
-;;     expr_2
-;;     expr_3
-;;     (let ()
-;;       (define var_2 (y))
-;;       (define var_3 (z))
-;;       expr_4
-;;       expr_5)))
+;; Mixing definition groups and expressions within bodies (SRFI-251)
+;; No error checks; identifier visibility constraint is not enforced
 
 ;; Implementation is based on Alan Petrofsky's EIOD v1.17
 ;; Copyright notice is left intact below; code changes are marked with +MDE/-MDE
@@ -631,71 +605,34 @@
      ;;; +MDE specific tests
      ((let ((x 0) (l '()))
         (set! x 1)
-        (define (incx v) (set! x (+ x v)))
         (define (pushv v) (set! l (cons v l)))
-        (define (pushx) (pushv x))
-        (pushx)
+        (pushv "the result is")
+        (define (foo) x)
         (define x 42)
-        (pushx)
-        (incx 14)
-        (pushx)
-        (pushv x)
-        l)
-      (42 15 1 1))
+        (pushv ": ")
+        (pushv (foo))
+        (reverse l))
+      ("the result is" ": " 42))
+     ((let ((x 0) (l '()))
+        (set! x 1)
+        (define (pushv v) (set! l (cons v l)))
+        (pushv "the result is")
+        (define (foo) x)
+        (define xx 42)
+        (pushv ": ")
+        (pushv (foo))
+        (reverse l))
+      ("the result is" ": " 1))
      ((let ((x 0) (l '()))
         (set! x 1)
         (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
         (define (pushv v) (set! l (cons v l)))
         (define-syntax pushx (syntax-rules () ((_) (pushv x))))
         (pushx)
-        (define x 42)
-        (pushx)
         (incx 14)
         (pushx)
-        (pushv x)
         l)
-      (42 15 1 1))
-     ((let ((x 0) (l '()))
-        (set! x 1)
-        (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
-        (define (pushv v) (set! l (cons v l)))
-        (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (pushx)
-        (define-syntax x (syntax-rules () ((_) 42)))
-        (pushx)
-        (incx 14)
-        (pushx)
-        (pushv (x))
-        l)
-      (42 15 1 1))
-     ((let ((x 0) (l '()))
-        (set! x 1)
-        (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
-        (define (pushv v) (set! l (cons v l)))
-        (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (begin ; spliced, so x starts new scope
-          (pushx)
-          (define-syntax x (syntax-rules () ((_) 42)))
-          (pushx))
-        (incx 14)
-        (pushx)
-        (pushv (x))
-        l)
-      (42 15 1 1))
-     ((let ((x 0) (l '()))
-        (set! x 1)
-        (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
-        (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-        (begin ; spliced, so pushx above can see pushv below
-          (define (pushv v) (set! l (cons v l)))
-          (pushx)
-          (define-syntax x (syntax-rules () ((_) 42)))
-          (pushx))
-        (incx 14)
-        (pushx)
-        (pushv (x))
-        l)
-      (42 15 1 1))
+      (15 1))
       ))
       (if noisy (begin (write fail-count) (display " failures.") (newline)))) ;; +MDE
 

@@ -33,8 +33,8 @@
 Scheme has traditionally required procedure bodies and the bodies of derived constructs
 such as <code>let</code> to contain definitions followed by commands/expressions.
 This SRFI proposes to allow mixing commands and groups of definitions in such bodies, so that each
-command/expression is in the scope of all local definitions preceding it, but not in scope of
-the local definitions following it. This approach is backwards compatible with R7RS and
+command/expression is in the scope of all local definition groups preceding it, but not in scope of
+the local definition groups following it. This approach is backwards compatible with R7RS and
 upholds the intuitive rule that to find the definition of a lexical variable, one has
 to look <em>up</em> the source code tree.
 </p>
@@ -50,8 +50,11 @@ This SRFI competes with Daphne Preston-Kendal's <a href="https://srfi.schemers.o
 which also allows arbitrary mixing of expressions/commands with definitions within single &langle;body&rangle;.
 The difference is in the <em>scope</em> of the internal definitions &mdash; while SRFI-245 proposes single recursive
 scope for all definitions, this SRFI limits the scope of each group of immediately adjacent definitions to the
-corresponding initializers and the subsequent body forms; the preceding body forms are not included. This
-scope rule is in line with common expectations on identifier visibility: to find a definition of an identifier,
+corresponding initializers and the subsequent body forms; the preceding body forms are not included. To make 
+sure that the extended &langle;body&rangle; with more than one definition group behaves in a way consistent
+with the top level, it is an error for a command or an initialization expression in a definition group to
+contain mentions of identifiers defined by “downstream” definition groups in the same body (<i>identifier visibility constraint</i>). 
+This scope rule is in line with common expectations on identifier visibility: to find a definition of an identifier,
 one has to go <em>up</em> the source tree, looking at groups of adjacent definitions, bindings, or formals; the
 first definition found (or top-level one if none is found) is the definition for the identifier in question.
 SRFI-245's rule of looking not only <em>up</em> the tree, but also <em>down</em>, stepping over the commands
@@ -72,11 +75,9 @@ forms are usually preferred to bindings-at-end <code>where</code>-style forms).
 
 <p>
 The rationale for allowing commands before and between the definitions within a single &langle;body&rangle;
-is the same as in SRFI-245, so it is copied verbatim below (except for the last paragraph). Also, since this
-proposal requires body-level <code>begin</code> forms to be treated as purely splicing constructs, implementation
-of some definition-producing macros such as <code>define-values</code> can become easier because they can
-expand to a command or a <code>begin</code> form with a mix of commands and definitions so it can be used not
-only on the top level, but also locally, on a body level.
+is the same as in SRFI-245, so it is copied verbatim below (except for the last paragraph). Please note that
+all bodies satisfying the abovementioned identifier visibility constraint have the same meaning under this 
+proposal and SRFI-245.
 </p>
 
 <p>
@@ -108,13 +109,15 @@ It is likewise sometimes useful to insert logging code before the beginning of a
   (define one-plus-one (+ 1 1))
   (test 2 one-plus-one)
   (define two-plus-two (+ one-plus-one one-plus-one))
-  (test 4 two-plus-two))</code></pre>
+  (test 4 two-plus-two))
+
+</code></pre>
 
 <h2 id="specification">Specification</h2>
 
 <p>
 Scheme's syntax for &langle;body&rangle; must be changed to
-allow &langle;definition&rangle; at any top-level position but the last.
+allow a group of adjacent definitions at any top-level position but the last.
 The grammar rules are:
 </p>
 <p>
@@ -125,8 +128,16 @@ The grammar rules are:
 
 <p>
 Informally, each group of adjacent definitions starts a new mutually recursive scope
-that incorporates the rest of the body. More formally, we can represent the semantics of
-new &langle;body&rangle; in terms of R7RS &langle;body&rangle; via translation function
+that incorporates the rest of the body. There is an additional visibility constraint on mentions
+of identifiers defined by body-level definition groups: it is an error for a body-level 
+command or an initialization expression of a definition in a body-level definition group
+to contain a free mention of an identifier defined in a subsequent (“downstream”) body-level definition 
+group in the same body.
+</p>
+
+<p>
+More formally, we can represent the semantics of a new &langle;body&rangle; satisfying
+the above constraint in terms of R7RS &langle;body&rangle; via translation function
 T[<i>new body</i>] &xrArr; <i>R7RS body</i> :
 </p>
 
@@ -140,67 +151,51 @@ T[<i>new body</i>] &xrArr; <i>R7RS body</i> :
 </p>
 
 <p>
-A conforming implementation must allow body-level definitions of the form
-<code>(begin</code> &langle;definition&rangle;<small>+</small><code>)</code> to contain
-an arbitrary mix of commands and definitions to be “spliced” into the original body before
-the above translation is (conceptually) performed. In effect, this extends the syntax
-of body-level <code>begin</code> definitions to that of top/program/library-level <code>begin</code>,
-i.e. <code>(begin</code> &langle;command or definition&rangle;<small>+</small><code>)</code>
-</p>
-
-<p>
 The actual transformation, run as a part of the macro expansion process, must ensure that
 macro uses expanding into definitions are processed in the same way as forms they expand to.
 In order to support this SRFI, the “definition discovery” process, normally limited to initial
 body forms, should be repeated after each non-definition form, producing a new nested recursive
-scope for each group of adjacent definitions. Body-level <code>begin</code> forms, possibly
-resulting from macro expansion in scopes established as macro processing steps through the body
-forms, are “spliced in” as soon as they are discovered, by prepending the contained forms to the
-list of forms yet to be processed.
+scope for each group of adjacent definitions. The constraint on the mentions of defined identifiers
+may be enforced during macro processing.
 </p>
 
 <p>
 Examples:
 </p>
 
-<pre><code>(let ()
-  expr_1
-  (define var_1 (x))
-  expr_2
-  expr_3
-  (define-syntax mac_1 (syntax-rules () ((_) (y))))
-  (define var_2 (z))
-  expr_4
-  expr_5)
+<p>
+This is an error because <code>(define (foo) x)</code> contains a mention of <code>x</code>
+defined via downstream definition group:
+</p>
+<pre><code>(let ((x 0))
+  (display "the result is")
+  (define (foo) x) 
+  (display ": ")
+  (define x 42)
+  (display (foo)))
 </code></pre>
-<p>can be rewritten as (R7RS):</p>
-<pre><code>(let ()
-  expr_1
-  (let ()
-    (define var_1 (x))
-    expr_2
-    expr_3
-    (let ()
-      (define-syntax mac_1 (syntax-rules () ((_) (y))))
-      (define var_2 (z))
-      expr_4
-      expr_5)))
+
+<p>
+The example below prints “the result is: 42”:
+</p>
+<pre><code>(let ((x 0))
+  (display "the result is")
+  (define (foo) x)
+  (define x 42)
+  (display ": ")
+  (display (foo)))
 </code></pre>
-<p>Mix of definitions and syntax definitions:</p>
-<pre><code>(let ((x 0) (l '()))
-  (set! x 1)
-  (define-syntax incx (syntax-rules () ((_ v) (set! x (+ x v)))))
-  (define (pushv v) (set! l (cons v l)))
-  (define-syntax pushx (syntax-rules () ((_) (pushv x))))
-  (pushx)
-  (define-syntax x (syntax-rules () ((_) 42)))
-  (pushx)
-  (incx 14)
-  (pushx)
-  (pushv (x))
-  l)
-&xrArr;
-(42 15 1 1)
+
+<p>
+This example prints “the result is: 0”:
+</p>
+<pre><code>(let ((x 0))
+  (display "the result is")
+  (define (foo) x)
+  (display ": ")
+  (define xx 42)
+  (display (foo)))
+
 </code></pre>
 
 <h2 id="implementation">Implementation</h2>
