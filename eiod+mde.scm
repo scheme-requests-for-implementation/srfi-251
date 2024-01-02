@@ -1,8 +1,9 @@
 ;; Mixing definition groups and expressions within bodies (SRFI-251)
 ;; No error checks; identifier visibility constraint is not enforced
 
-;; Implementation is based on Alan Petrofsky's EIOD v1.17
 ;; Copyright notice is left intact below; code changes are marked with +MDE/-MDE
+;;
+;; SPDX-License-Identifier: GPL
 
 ;; eiod.scm: eval-in-one-define
 ;; $Id: eiod.scm,v 1.17 2005/03/26 19:57:44 al Exp $

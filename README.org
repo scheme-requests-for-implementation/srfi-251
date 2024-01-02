@@ -1,4 +1,6 @@
 
+# SPDX-FileCopyrightText: 2024 Sergei Egorov
+# SPDX-License-Identifier: MIT
 * SRFI 251: Mixing groups of definitions with expressions within bodies
 
 ** by Sergei Egorov
