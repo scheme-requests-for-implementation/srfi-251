@@ -50,10 +50,10 @@ This SRFI competes with Daphne Preston-Kendal's <a href="https://srfi.schemers.o
 which also allows arbitrary mixing of expressions/commands with definitions within single &langle;body&rangle;.
 The difference is in the <em>scope</em> of the internal definitions &mdash; while SRFI-245 proposes single recursive
 scope for all definitions, this SRFI limits the scope of each group of immediately adjacent definitions to the
-corresponding initializers and the subsequent body forms; the preceding body forms are not included. To make 
+corresponding initializers and the subsequent body forms; the preceding body forms are not included. To make
 sure that the extended &langle;body&rangle; with more than one definition group behaves in a way consistent
 with the top level, it is an error for a command or an initialization expression in a definition group to
-contain mentions of identifiers defined by “downstream” definition groups in the same body (<i>identifier visibility constraint</i>). 
+contain mentions of identifiers defined by “downstream” definition groups in the same body (<i>identifier visibility constraint</i>).
 This scope rule is in line with common expectations on identifier visibility: to find a definition of an identifier,
 one has to go <em>up</em> the source tree, looking at groups of adjacent definitions, bindings, or formals; the
 first definition found (or top-level one if none is found) is the definition for the identifier in question.
@@ -76,7 +76,7 @@ forms are usually preferred to bindings-at-end <code>where</code>-style forms).
 <p>
 The rationale for allowing commands before and between the definitions within a single &langle;body&rangle;
 is the same as in SRFI-245, so it is copied verbatim below (except for the last paragraph). Please note that
-all bodies satisfying the abovementioned identifier visibility constraint have the same meaning under this 
+all bodies satisfying the abovementioned identifier visibility constraint have the same meaning under this
 proposal and SRFI-245.
 </p>
 
@@ -129,9 +129,9 @@ The grammar rules are:
 <p>
 Informally, each group of adjacent definitions starts a new mutually recursive scope
 that incorporates the rest of the body. There is an additional visibility constraint on mentions
-of identifiers defined by body-level definition groups: it is an error for a body-level 
+of identifiers defined by body-level definition groups: it is an error for a body-level
 command or an initialization expression of a definition in a body-level definition group
-to contain a free mention of an identifier defined in a subsequent (“downstream”) body-level definition 
+to contain a free mention of an identifier defined in a subsequent (“downstream”) body-level definition
 group in the same body.
 </p>
 
@@ -169,7 +169,7 @@ defined via downstream definition group:
 </p>
 <pre><code>(let ((x 0))
   (display "the result is")
-  (define (foo) x) 
+  (define (foo) x)
   (display ": ")
   (define x 42)
   (display (foo)))
