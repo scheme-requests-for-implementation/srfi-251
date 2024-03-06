@@ -192,7 +192,7 @@ The example below prints “the result is: 42”:
 </code></pre>
 
 <p>
-This example prints “the result is: 0”:
+These two examples print “the result is: 0”:
 </p>
 <pre><code>(let ((x 0))
   (display "the result is")
@@ -201,7 +201,17 @@ This example prints “the result is: 0”:
   (define xx 42)
   (display (foo)))
 
-</code></pre>
+(let ((x 0))
+  (define-syntax define-thunk
+    (syntax-rules ()
+      ((_ i v) (define (i) v))))
+  (display "the result is")
+  (display ": ")
+  (define xx 42)
+  (define-thunk foo x)
+  (display (foo)))
+  </code></pre>
+  
 
 <h2 id="implementation">Implementation</h2>
 
