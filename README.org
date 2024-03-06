@@ -1,5 +1,5 @@
 
-# SPDX-FileCopyrightText: 2024 Sergei Egorov
+# SPDX-FileCopyrightText: 2024 Arthur A. Gleckler
 # SPDX-License-Identifier: MIT
 * SRFI 251: Mixing groups of definitions with expressions within bodies
 
