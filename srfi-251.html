@@ -71,7 +71,7 @@ modern functional languages such as ReasonML, Elixir, and others.
 
 <p>
 Note that differences in scope behavior of the proposed body-level definitions and top-level definitions
-are made necessary by the fact that potentially there are a lot of lexically-scoped identifiers to refer
+are made necessary by the fact that potentially there are a lot of lexically scoped identifiers to refer
 to from bodies, while top level has just one scope, the program/library global scope. The “look up the tree”
 rule for searching for variable definitions is not applicable on the top level, because there is no “up”;
 replicating this functionality on a local level may lead to hard-to-follow code, with “up” and “down”
@@ -82,7 +82,7 @@ forms are usually preferred to bindings-at-end <code>where</code>-style forms).
 <p>
 The rationale for allowing commands before and between the definitions within a single ⟨body⟩
 is the same as in SRFI-245, so it is copied verbatim below (except for the last paragraph). Please note that
-all bodies satisfying the abovementioned identifier visibility constraint have the same meaning under this
+all bodies satisfying the aforementioned identifier visibility constraint have the same meaning under this
 proposal and SRFI-245.
 </p>
 
@@ -214,7 +214,7 @@ These two examples print “the result is: 0”:
 <h2 id="implementation">Implementation</h2>
 
 <p>
-Sample implementation is based on Alan Petrofsky's EIOD (“Eval In One Define”) v1.17.
+The sample implementation is based on Alan Petrofsky's EIOD (“Eval In One Define”) v1.17.
 Support for this proposal is implemented as a 5-line patch to the original code.
 </p>
 
