@@ -3,7 +3,7 @@
 
 ;; Copyright notice is left intact below; code changes are marked with +MDE/-MDE
 ;;
-;; SPDX-License-Identifier: GPL
+;; SPDX-License-Identifier: GPL-2.0-or-later
 
 ;; eiod.scm: eval-in-one-define
 ;; $Id: eiod.scm,v 1.17 2005/03/26 19:57:44 al Exp $
