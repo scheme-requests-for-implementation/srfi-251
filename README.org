@@ -11,7 +11,7 @@ keywords: [[https://srfi.schemers.org/?keywords=binding][Binding]]
 
 This repository hosts [[https://srfi.schemers.org/srfi-251/][SRFI 251]]: Mixing groups of definitions with expressions within bodies, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
-This SRFI is in /draft/ status.
+This SRFI is in /final/ status.
 See also [[/srfi-245/][SRFI 245: Mixing definitions and expressions within bodies]].
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-251/srfi-251.html][SRFI Document]].
 
